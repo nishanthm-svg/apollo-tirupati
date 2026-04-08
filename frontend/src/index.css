@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply font-sans text-gray-900 antialiased; }
+}
+
+@layer components {
+  .btn-pink { @apply bg-apollo-pink hover:bg-apollo-pink-dark text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0; }
+  .btn-outline-pink { @apply border-2 border-apollo-pink text-apollo-pink hover:bg-apollo-pink hover:text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-200; }
+  .btn-teal { @apply bg-apollo-teal hover:bg-apollo-teal-light text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5; }
+  .btn-whatsapp { @apply bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-full transition-all duration-200 flex items-center gap-2 text-sm; }
+  .card { @apply bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300; }
+  .section-title { @apply text-3xl font-extrabold text-apollo-teal mb-2; }
+  .section-sub { @apply text-gray-500 text-base max-w-xl mx-auto; }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #A62159, #033B49);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .bg-hero {
+    background: linear-gradient(135deg, #033B49 0%, #065570 50%, #0a7a9a 100%);
+  }
+}
+
+/* WhatsApp pulse */
+.whatsapp-pulse {
+  position: relative;
+}
+.whatsapp-pulse::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, 0.4);
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+  75%, 100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Skeleton loader */
+.skeleton { @apply bg-gray-200 animate-pulse rounded; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #A62159; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #8a1a49; }
+
+/* Modal overlay */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
