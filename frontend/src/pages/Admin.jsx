@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { adminLogin, useAdminData } from '../hooks/useApi.js'
+import staticData from '../data/staticData.json'
+
+const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 
 // ── Sidebar nav items ──────────────────────────────────────────────────────────
 const NAV = [
@@ -80,8 +83,19 @@ function StatCard({ label, value, icon, color }) {
 function Dashboard({ token }) {
   const [data, setData] = useState(null)
   useEffect(() => {
-    axios.get('/api/admin/dashboard', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => setData(r.data))
+    if (IS_LOCAL) {
+      axios.get('/api/admin/dashboard', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => setData(r.data))
+        .catch(() => setData({
+          stats: { totalBookings: 0, confirmedBookings: 0, totalRevenue: 0, totalTests: staticData.tests.length, totalPackages: staticData.packages.length, totalCentres: staticData.centres.length },
+          recentBookings: []
+        }))
+    } else {
+      setData({
+        stats: { totalBookings: 0, confirmedBookings: 0, totalRevenue: 0, totalTests: staticData.tests.length, totalPackages: staticData.packages.length, totalCentres: staticData.centres.length },
+        recentBookings: []
+      })
+    }
   }, [token])
 
   if (!data) return <div className="text-center py-10 text-gray-400">Loading dashboard...</div>

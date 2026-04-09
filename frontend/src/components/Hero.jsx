@@ -5,7 +5,7 @@ import { openWhatsApp, buildWhatsAppGeneralMessage } from '../utils/whatsapp.js'
 const STATS = [
   { value: 10000, suffix: '+', label: 'Happy Patients', icon: '👥' },
   { value: 500, suffix: '+', label: 'Tests Available', icon: '🔬' },
-  { value: 4, suffix: '', label: 'Centres', icon: '🏥' },
+  { value: 5, suffix: '', label: 'Centres', icon: '🏥' },
   { value: 100, suffix: '%', label: 'NABL Accredited', icon: '✅' },
 ]
 
@@ -39,17 +39,18 @@ function AnimatedCounter({ target, suffix, duration = 2000 }) {
 export default function Hero({ onBook, selectedCentre }) {
   const { tests } = useTests()
   const [form, setForm] = useState({ name: '', phone: '', testId: '' })
-  const [submitting, setSubmitting] = useState(false)
+  const [errors, setErrors] = useState({})
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    if (!form.name || !form.phone) return
+    const errs = {}
+    if (!form.name.trim()) errs.name = 'Name required'
+    if (!form.phone.trim() || form.phone.replace(/\D/g, '').length < 10) errs.phone = 'Valid 10-digit number required'
+    if (Object.keys(errs).length) { setErrors(errs); return }
+    setErrors({})
     const selected = tests.find(t => t.id === Number(form.testId))
-    if (selected) {
-      onBook(selected)
-    } else {
-      document.getElementById('tests')?.scrollIntoView({ behavior: 'smooth' })
-    }
+    // Pass prefill so BookingModal skips to Schedule step
+    onBook(selected || null, { name: form.name.trim(), phone: form.phone.trim() })
   }
 
   return (
@@ -72,7 +73,7 @@ export default function Hero({ onBook, selectedCentre }) {
             </h1>
             <p className="text-white/80 text-lg mb-6 leading-relaxed">
               Serving pilgrims visiting Tirumala, local residents, and corporates across Tirupati,
-              Tiruchanoor, Renigunta &amp; Chandragiri with accurate, affordable diagnostics.
+              Tiruchanoor, Renigunta, Chandragiri &amp; Chittoor with accurate, affordable diagnostics.
             </p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -113,61 +114,58 @@ export default function Hero({ onBook, selectedCentre }) {
           </div>
 
           {/* Quick Book Form */}
-          <div className="animate-slide-up">
-            <div className="bg-white rounded-2xl shadow-2xl p-6">
-              <h2 className="text-apollo-teal font-bold text-xl mb-1">Quick Book a Test</h2>
-              <p className="text-gray-500 text-sm mb-5">Book in 30 seconds. Get confirmed instantly.</p>
-              <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="animate-slide-up w-full">
+            <div className="bg-white rounded-2xl shadow-2xl p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <h2 className="text-apollo-teal font-bold text-xl">Quick Book a Test</h2>
+              </div>
+              <p className="text-gray-500 text-sm mb-4">Enter your details — we'll skip straight to scheduling.</p>
+              <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
                   <input
                     type="text"
-                    required
                     placeholder="Enter your full name"
                     value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-apollo-pink focus:ring-2 focus:ring-apollo-pink/20 transition-all"
+                    onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setErrors(x => ({ ...x, name: '' })) }}
+                    className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition-all ${errors.name ? 'border-red-400 focus:border-red-400' : 'border-gray-200 focus:border-apollo-pink focus:ring-2 focus:ring-apollo-pink/20'}`}
                   />
+                  {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
                   <input
                     type="tel"
-                    required
                     placeholder="+91 98765 43210"
                     value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-apollo-pink focus:ring-2 focus:ring-apollo-pink/20 transition-all"
+                    onChange={e => { setForm(f => ({ ...f, phone: e.target.value })); setErrors(x => ({ ...x, phone: '' })) }}
+                    className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none transition-all ${errors.phone ? 'border-red-400 focus:border-red-400' : 'border-gray-200 focus:border-apollo-pink focus:ring-2 focus:ring-apollo-pink/20'}`}
                   />
+                  {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Test</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Test <span className="text-gray-400 font-normal">(optional)</span></label>
                   <select
                     value={form.testId}
                     onChange={e => setForm(f => ({ ...f, testId: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-apollo-pink focus:ring-2 focus:ring-apollo-pink/20 transition-all bg-white"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-apollo-pink focus:ring-2 focus:ring-apollo-pink/20 transition-all bg-white"
                   >
-                    <option value="">-- Select a test (optional) --</option>
+                    <option value="">— Choose a test (optional) —</option>
                     {tests.map(t => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} — ₹{t.price}
-                      </option>
+                      <option key={t.id} value={t.id}>{t.name} — ₹{t.price}</option>
                     ))}
                   </select>
                 </div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full btn-pink py-3 text-base disabled:opacity-60"
-                >
-                  {submitting ? 'Processing...' : 'Book Appointment'}
+                <button type="submit" className="w-full btn-pink py-3 text-base mt-1">
+                  Book Appointment →
                 </button>
               </form>
-              <div className="flex items-center gap-2 mt-4 p-3 bg-green-50 rounded-xl">
-                <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-start gap-2 mt-3 p-3 bg-green-50 rounded-xl">
+                <svg className="w-4 h-4 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-xs text-green-700 font-medium">Free home collection available across Tirupati &amp; Tiruchanoor</p>
+                <p className="text-xs text-green-700 font-medium">Free home collection across Tirupati, Tiruchanoor, Renigunta, Chandragiri &amp; Chittoor</p>
               </div>
             </div>
           </div>

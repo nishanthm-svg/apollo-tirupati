@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBooking } from '../hooks/useApi.js'
 import { openWhatsApp, buildWhatsAppBookingConfirmMessage } from '../utils/whatsapp.js'
 
@@ -7,6 +7,7 @@ const CENTRES = [
   'Tiruchanoor',
   'Renigunta',
   'Chandragiri',
+  'Chittoor',
 ]
 
 const TIME_SLOTS = [
@@ -24,10 +25,11 @@ function getTodayStr() {
   return new Date().toISOString().split('T')[0]
 }
 
-export default function BookingModal({ test, pkg, isOpen, onClose, selectedCentre }) {
-  const [step, setStep] = useState(1)
+export default function BookingModal({ test, pkg, isOpen, onClose, selectedCentre, prefill }) {
+  const initialStep = (prefill?.name && prefill?.phone) ? 2 : 1
+  const [step, setStep] = useState(initialStep)
   const [form, setForm] = useState({
-    name: '', phone: '', email: '',
+    name: prefill?.name || '', phone: prefill?.phone || '', email: '',
     centre: selectedCentre || CENTRES[0],
     date: getTodayStr(),
     timeSlot: '',
@@ -36,6 +38,25 @@ export default function BookingModal({ test, pkg, isOpen, onClose, selectedCentr
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [booking, setBooking] = useState(null)
+
+  // Reset form whenever modal opens with new prefill/test
+  useEffect(() => {
+    if (isOpen) {
+      const hasPrefill = prefill?.name && prefill?.phone
+      setStep(hasPrefill ? 2 : 1)
+      setForm({
+        name: prefill?.name || '',
+        phone: prefill?.phone || '',
+        email: '',
+        centre: selectedCentre || CENTRES[0],
+        date: getTodayStr(),
+        timeSlot: '',
+        homeCollection: false,
+      })
+      setErrors({})
+      setBooking(null)
+    }
+  }, [isOpen, prefill, selectedCentre])
 
   const item = test || pkg
 
@@ -79,13 +100,14 @@ export default function BookingModal({ test, pkg, isOpen, onClose, selectedCentr
         testName: test?.name,
         packageId: pkg?.id,
         packageName: pkg?.name,
+        amount: item?.price || 0,
         centre: form.centre,
         date: form.date,
         timeSlot: form.timeSlot,
         homeCollection: form.homeCollection,
       }
       const res = await createBooking(payload)
-      setBooking(res.booking)
+      setBooking(res.booking || res)
       setStep(3)
     } catch (err) {
       alert('Booking failed. Please try again or contact us via WhatsApp.')
@@ -102,7 +124,9 @@ export default function BookingModal({ test, pkg, isOpen, onClose, selectedCentr
     onClose()
   }
 
-  if (!isOpen || !item) return null
+  if (!isOpen) return null
+  // If no test/pkg selected (e.g. Quick Book without test), use a placeholder
+  const displayItem = item || { name: 'General Appointment', price: 0 }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay" onClick={e => e.target === e.currentTarget && handleClose()}>
@@ -112,7 +136,7 @@ export default function BookingModal({ test, pkg, isOpen, onClose, selectedCentr
           <div className="flex items-start justify-between mb-3">
             <div>
               <h2 className="font-bold text-lg">{step < 3 ? 'Book Appointment' : 'Booking Confirmed!'}</h2>
-              <p className="text-white/70 text-sm mt-0.5 line-clamp-1">{item.name}</p>
+              <p className="text-white/70 text-sm mt-0.5 line-clamp-1">{displayItem.name}</p>
             </div>
             <button onClick={handleClose} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,8 +168,8 @@ export default function BookingModal({ test, pkg, isOpen, onClose, selectedCentr
               {/* Test Summary */}
               <div className="bg-apollo-teal/5 rounded-xl p-3 border border-apollo-teal/10">
                 <p className="text-xs text-gray-500 mb-0.5">Booking for</p>
-                <p className="font-semibold text-apollo-teal">{item.name}</p>
-                <p className="text-apollo-pink font-bold">₹{item.price}</p>
+                <p className="font-semibold text-apollo-teal">{displayItem.name}</p>
+                {displayItem.price > 0 && <p className="text-apollo-pink font-bold">₹{displayItem.price}</p>}
               </div>
 
               <div>

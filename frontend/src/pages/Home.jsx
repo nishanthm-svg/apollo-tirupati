@@ -17,10 +17,14 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedTest, setSelectedTest] = useState(null)
   const [selectedPkg, setSelectedPkg] = useState(null)
+  const [bookingPrefill, setBookingPrefill] = useState(null)
 
-  const openBooking = (test, pkg = null) => {
+  const openBooking = (test, pkgOrPrefill = null) => {
+    // pkgOrPrefill can be a package object OR a prefill {name, phone} object from Hero
+    const isPrefill = pkgOrPrefill && 'name' in pkgOrPrefill && !pkgOrPrefill.id
     setSelectedTest(test)
-    setSelectedPkg(pkg)
+    setSelectedPkg(isPrefill ? null : pkgOrPrefill)
+    setBookingPrefill(isPrefill ? pkgOrPrefill : null)
     setModalOpen(true)
   }
 
@@ -28,6 +32,7 @@ export default function Home() {
     setModalOpen(false)
     setSelectedTest(null)
     setSelectedPkg(null)
+    setBookingPrefill(null)
   }
 
   return (
@@ -74,6 +79,7 @@ export default function Home() {
         isOpen={modalOpen}
         onClose={closeBooking}
         selectedCentre={selectedCentre}
+        prefill={bookingPrefill}
       />
     </div>
   )

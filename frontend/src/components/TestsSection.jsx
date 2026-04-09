@@ -1,6 +1,29 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import axios from 'axios'
 import TestCard from './TestCard.jsx'
+import staticData from '../data/staticData.json'
+
+const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+
+function filterTests(tests, params = {}) {
+  let result = [...tests]
+  if (params.search) {
+    const q = params.search.toLowerCase()
+    result = result.filter(t =>
+      t.name.toLowerCase().includes(q) ||
+      t.category.toLowerCase().includes(q) ||
+      (t.tags || []).some(tag => tag.toLowerCase().includes(q))
+    )
+  }
+  if (params.category) result = result.filter(t => t.category === params.category)
+  if (params.minPrice) result = result.filter(t => t.price >= params.minPrice)
+  if (params.maxPrice) result = result.filter(t => t.price <= params.maxPrice)
+  if (params.sort === 'price_asc') result.sort((a, b) => a.price - b.price)
+  else if (params.sort === 'price_desc') result.sort((a, b) => b.price - a.price)
+  else if (params.sort === 'name_asc') result.sort((a, b) => a.name.localeCompare(b.name))
+  else result.sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0))
+  return result
+}
 
 const CATEGORIES = [
   'All', 'Blood Tests', 'Blood Chemistry', 'Thyroid', 'Liver', 'Kidney',
@@ -55,12 +78,18 @@ export default function TestsSection({ onBook, selectedCentre }) {
 
   const fetchTests = useCallback(async (params) => {
     setLoading(true)
-    try {
-      const res = await axios.get('/api/tests', { params })
-      setTests(res.data)
-      setVisibleCount(12)
-    } catch { /* ignore */ }
-    finally { setLoading(false) }
+    if (IS_LOCAL) {
+      try {
+        const res = await axios.get('/api/tests', { params })
+        setTests(res.data)
+        setVisibleCount(12)
+        setLoading(false)
+        return
+      } catch { /* fall through to static */ }
+    }
+    setTests(filterTests(staticData.tests, params))
+    setVisibleCount(12)
+    setLoading(false)
   }, [])
 
   useEffect(() => {

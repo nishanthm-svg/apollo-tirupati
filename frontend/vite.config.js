@@ -1,19 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// When deploying to GitHub Pages the repo name becomes the base path.
-// Set VITE_BASE_URL env var in GitHub Actions to override (e.g. /apollo-tirupati/).
-// For local dev, base is '/' so proxying still works.
-const base = process.env.VITE_BASE_URL || '/'
+const isProd = process.env.NODE_ENV === 'production'
+// GitHub Pages serves from /apollo-tirupati/ — must match repo name exactly
+const base = isProd ? '/apollo-tirupati/' : '/'
 
 export default defineConfig({
   base,
+  define: {
+    // Expose base to the app so BrowserRouter can use it as basename
+    'import.meta.env.VITE_BASE_URL': JSON.stringify(isProd ? '/apollo-tirupati/' : '/'),
+  },
   plugins: [react()],
   server: {
     port: 5200,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:4000',
+        target: 'http://localhost:4000',
         changeOrigin: true
       }
     }
