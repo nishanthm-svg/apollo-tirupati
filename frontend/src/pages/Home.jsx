@@ -8,6 +8,8 @@ import HomeCollection from '../components/HomeCollection.jsx'
 import CentresSection from '../components/CentresSection.jsx'
 import OffersSection from '../components/OffersSection.jsx'
 import Testimonials from '../components/Testimonials.jsx'
+import CityLanding from '../components/CityLanding.jsx'
+import FAQSection from '../components/FAQSection.jsx'
 import Footer from '../components/Footer.jsx'
 import FloatingButtons from '../components/FloatingButtons.jsx'
 import BookingModal from '../components/BookingModal.jsx'
@@ -68,6 +70,8 @@ export default function Home() {
         <OffersSection onBook={openBooking} />
 
         <Testimonials />
+        <CityLanding />
+        <FAQSection />
       </main>
 
       <Footer />

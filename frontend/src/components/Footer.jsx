@@ -15,6 +15,7 @@ const CENTRES_LIST = [
   { name: 'Tiruchanoor', addr: 'Near Padmavathi Temple', phone: '+91 72070 74078' },
   { name: 'Renigunta', addr: 'Near Railway Station', phone: '+91 72070 74078' },
   { name: 'Chandragiri', addr: 'Fort Road, Near Chandragiri Fort', phone: '+91 72070 74078' },
+  { name: 'Chittoor', addr: 'Renigunta Road, Near RTC Bus Stand', phone: '+91 72070 74078' },
 ]
 
 const INFO_LINKS = [
