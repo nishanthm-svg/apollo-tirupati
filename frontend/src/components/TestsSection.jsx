@@ -27,7 +27,9 @@ function filterTests(tests, params = {}) {
 
 const CATEGORIES = [
   'All', 'Blood Tests', 'Blood Chemistry', 'Thyroid', 'Liver', 'Kidney',
-  'Vitamins & Minerals', 'Urine', 'Cardiac', 'Hormones', 'Infections/Serology'
+  'Vitamins & Minerals', 'Urine', 'Cardiac', 'Hormones', 'Infections/Serology',
+  'Allergy & Immunology', 'Coagulation', 'Genetics & Molecular', 'Microbiology',
+  'Oncology Markers', 'Histopathology', 'Other Tests'
 ]
 
 const PRICE_RANGES = [
